@@ -63,7 +63,7 @@ for numero in range(100, -1, -2):
 n = int(input("Ingresa un número entero positivo: "))
 
 suma = 0
-for i in range(1, n+1)
+for i in range(1, n+1):
     suma += i
 
 print("La suma de los números entre 0 y", n, "es:", suma)
