@@ -21,19 +21,25 @@ print("Nota más baja:", nota_minima)
 # • Preguntar al usuario qué producto desea eliminar y actualizar la lista.
 
 productos = []
-
 for i in range(5):
-    producto = input(f"Ingrese el producto {i+1}: ")
+    producto = input(f"Ingrese el producto {i+1}: ").strip()
     productos.append(producto)
 
-productos_ordenados = sorted(productos)
+# Orden alfabético sin distinguir mayúsculas/minúsculas
+productos_ordenados = sorted(productos, key=lambda s: s.lower())
 print("\nLista de productos ordenada alfabéticamente:")
 print(productos_ordenados)
 
-eliminar = input("\n¿Qué producto desea eliminar?: ")
+eliminar = input("\n¿Qué producto desea eliminar?: ").strip()
+# Buscar índice ignorando mayúsculas/minúsculas
+indice_eliminar = -1
+for idx, item in enumerate(productos_ordenados):
+    if item.lower() == eliminar.lower():
+        indice_eliminar = idx
+        break
 
-if eliminar in productos_ordenados:
-    productos_ordenados.remove(eliminar)
+if indice_eliminar != -1:
+    productos_ordenados.pop(indice_eliminar)
     print("\nLista actualizada de productos:")
     print(productos_ordenados)
 else:
@@ -63,11 +69,15 @@ print("Cantidad de impares:", len(impares))
 # • Mostrar el resultado.
 
 datos = [1, 3, 5, 3, 7, 1, 9, 5, 3]
-print("Lista original:", datos)
+print("\nLista original:", datos)
 
-sin_repetidos = list(set(datos))
+sin_repetidos = []
+for x in datos:
+    if x not in sin_repetidos:
+        sin_repetidos.append(x)
 
-print("Lista sin elementos repetidos:", sin_repetidos)
+print("Lista sin elementos repetidos (orden preservado):", sin_repetidos)
+
 
 # 5) Crear una lista con los nombres de 8 estudiantes presentes en clase.
 # • Preguntar al usuario si quiere agregar un nuevo estudiante o eliminar uno existente.
@@ -125,7 +135,7 @@ for i, dia in enumerate(dias, start=1):
     tmin = float(input(f"{dia} - Mínima: "))
     tmax = float(input(f"{dia} - Máxima: "))
     if tmax < tmin:
-        print("⚠️ La máxima no puede ser menor que la mínima. Intercambio los valores.")
+        print("La máxima no puede ser menor que la mínima. Intercambio los valores.")
         tmin, tmax = tmax, tmin
     temperaturas.append([tmin, tmax])
 
@@ -177,70 +187,97 @@ for j in range(materias):
 
 tablero = [["-" for _ in range(3)] for _ in range(3)]
 
-def mostrar_tablero(t):
-    for fila in t:
-        print(" ".join(fila))
-    print()
-
 print("\n== Ta-Te-Ti ==")
-mostrar_tablero(tablero)
+for fila in tablero:
+    print(" ".join(fila))
+print()
 
-jugador = "X" 
+jugador = "X"
+ganador = None 
+
 for turno in range(9):
     print(f"Turno {turno+1} - Juega '{jugador}'")
-    try:
-        f = int(input("Fila (1-3): ")) - 1
-        c = int(input("Columna (1-3): ")) - 1
-    except ValueError:
-        print("Entrada inválida. Intentá de nuevo.")
+
+    f_str = input("Fila (1-3): ").strip()
+    if not f_str.isdigit():
+        print("Entrada inválida (no es número). Intentá de nuevo.\n")
         continue
+    f = int(f_str) - 1
+
+    c_str = input("Columna (1-3): ").strip()
+    if not c_str.isdigit():
+        print("Entrada inválida (no es número). Intentá de nuevo.\n")
+        continue
+    c = int(c_str) - 1
 
     if not (0 <= f < 3 and 0 <= c < 3):
-        print("Posición fuera de rango. Intentá de nuevo.")
+        print("Posición fuera de rango. Intentá de nuevo.\n")
         continue
+
     if tablero[f][c] != "-":
-        print("Casilla ocupada. Elegí otra.")
+        print("Casilla ocupada. Elegí otra.\n")
         continue
 
     tablero[f][c] = jugador
-    mostrar_tablero(tablero)
 
-    # alternar jugador
+    for fila in tablero:
+        print(" ".join(fila))
+    print()
+
+    linea_fila = (tablero[f][0] == jugador and tablero[f][1] == jugador and tablero[f][2] == jugador)
+    linea_col  = (tablero[0][c] == jugador and tablero[1][c] == jugador and tablero[2][c] == jugador)
+    diag_p     = (f == c) and (tablero[0][0] == jugador and tablero[1][1] == jugador and tablero[2][2] == jugador)
+    diag_s     = (f + c == 2) and (tablero[0][2] == jugador and tablero[1][1] == jugador and tablero[2][0] == jugador)
+
+    if linea_fila or linea_col or diag_p or diag_s:
+        ganador = jugador
+        print(f"¡Ganó '{jugador}'!")
+        break
+
+    if turno == 8:
+        print(" Empate. No hay más jugadas posibles.")
+        break
+
     jugador = "O" if jugador == "X" else "X"
+
 
 # 10) Una tienda registra las ventas de 4 productos durante 7 días, en una matriz de 4x7.
 # • Mostrar el total vendido por cada producto.
 # • Mostrar el día con mayores ventas totales.
 # • Indicar cuál fue el producto más vendido en la semana.
 
-tablero = [["-" for _ in range(3)] for _ in range(3)]
+dias = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
 
-def mostrar_tablero(t):
-    for fila in t:
-        print(" ".join(fila))
-    print()
+ventas = []
+print("\n== Carga de ventas (4 productos x 7 días) ==")
+for i in range(4):
+    fila = []
+    print(f"\nProducto {i+1}:")
+    for j in range(7):
+        while True:
+            v_str = input(f"  Ventas del día {dias[j]}: ").strip()
+            if not v_str.isdigit():
+                print("Ingresá un número entero.")
+                continue
+            v = int(v_str)
+            if v < 0:
+                print("Ingresá un número >= 0.")
+                continue
+            fila.append(v)
+            break
+    ventas.append(fila)
 
-print("\n== Ta-Te-Ti ==")
-mostrar_tablero(tablero)
+totales_prod = [sum(fila) for fila in ventas]
+print("\nTotal vendido por producto:")
+for i, total in enumerate(totales_prod, start=1):
+    print(f"  Producto {i}: {total}")
 
-jugador = "X"
-for turno in range(9):
-    print(f"Turno {turno+1} - Juega '{jugador}'")
-    try:
-        f = int(input("Fila (1-3): ")) - 1
-        c = int(input("Columna (1-3): ")) - 1
-    except ValueError:
-        print("Entrada inválida. Intentá de nuevo.")
-        continue
+totales_dia = [sum(ventas[i][j] for i in range(4)) for j in range(7)]
+dia_max_idx = totales_dia.index(max(totales_dia))
+print("\nTotal vendido por día:")
+for j, total in enumerate(totales_dia):
+    print(f"  {dias[j]}: {total}")
+print(f"\nDía con mayores ventas: {dias[dia_max_idx]} (total {totales_dia[dia_max_idx]})")
 
-    if not (0 <= f < 3 and 0 <= c < 3):
-        print("Posición fuera de rango. Intentá de nuevo.")
-        continue
-    if tablero[f][c] != "-":
-        print("Casilla ocupada. Elegí otra.")
-        continue
-
-    tablero[f][c] = jugador
-    mostrar_tablero(tablero)
-
-    jugador = "O" if jugador == "X" else "X"
+prod_max_idx = totales_prod.index(max(totales_prod))
+print(f"Producto más vendido: Producto {prod_max_idx+1} (total {totales_prod[prod_max_idx]})")
